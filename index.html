@@ -232,22 +232,22 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
+            grid-template-columns: repeat(14, 1fr);
             gap: 3px;
             margin-bottom: 20px;
             justify-content: center;
         }
 
         .cell {
-            width: 35px;
-            height: 35px;
+            width: 32px;
+            height: 32px;
             border: 2px solid #165b33;
             background: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             user-select: none;
             -webkit-user-select: none;
@@ -420,9 +420,9 @@
 
         @media (max-width: 768px) {
             .cell {
-                width: 20px;
-                height: 20px;
-                font-size: 10px;
+                width: 18px;
+                height: 18px;
+                font-size: 9px;
                 border: 1.5px solid #165b33;
             }
             
@@ -634,7 +634,7 @@
         ];
 
         function createGrid(category) {
-            const size = 12;
+            const size = 14;
             const grid = Array(size).fill().map(() => Array(size).fill(''));
             const words = categories[category];
             const placed = [];
@@ -713,7 +713,7 @@
         function renderGrid(category) {
             const gridElement = document.getElementById(`grid-${category}`);
             const grid = grids[category];
-            const size = 12;
+            const size = 14;
             
             gridElement.innerHTML = '';
             for (let i = 0; i < size; i++) {
