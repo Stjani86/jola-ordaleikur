@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jólaorðaleit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a472a 0%, #0d2818 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #165b33;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .refresh-btn:hover {
+            background: #1a7a3f;
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .refresh-btn:active {
+            transform: rotate(180deg) scale(0.95);
+        }
+
+        h1 {
+            text-align: center;
+            color: #c41e3a;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #165b33;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .category-select {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: 3px solid #c41e3a;
+            background: white;
+            color: #c41e3a;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .category-btn:hover {
+            background: #c41e3a;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .category-btn.active {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .category-btn.completed {
+            background: #165b33;
+            border-color: #165b33;
+            color: white;
+        }
+
+        .tree-container {
+            text-align: center;
+            margin: 30px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f8f4 0%, #e8f5e9 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .tree-row {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tree {
+            font-size: 90px;
+            cursor: default;
+            transition: all 0.8s ease-in-out;
+            filter: grayscale(100%) brightness(0.7) contrast(0.5);
+            opacity: 0.4;
+        }
+
+        .tree.completed {
+            opacity: 1;
+            filter: grayscale(0%) brightness(1) contrast(1);
+        }
+
+        .tree.all-complete {
+            cursor: pointer;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .tree.all-complete:hover {
+            transform: scale(1.1);
+        }
+
+        .tree-label {
+            font-size: 1em;
+            color: #165b33;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .tree-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 25px #ffd700) grayscale(0%); }
+            50% { filter: drop-shadow(0 0 40px #ffeb3b) grayscale(0%); }
+        }
+
+        .tree-progress {
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #165b33;
+            font-weight: bold;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tree-hint {
+            margin-top: 10px;
+            font-size: 0.95em;
+            color: #666;
+            font-style: italic;
+            transition: all 0.5s;
+        }
+
+        .tree-hint.hidden {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .game-area {
+            display: none;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .grid-container {
+            display: inline-block;
+            margin: 20px auto;
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 3px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #165b33;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            transition: all 0.2s;
+            border-radius: 3px;
+            touch-action: none;
+        }
+
+        .cell.hint {
+            background: #ffd700;
+            border-color: #ff8c00;
+            animation: pulse 1s ease-in-out 3;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .cell:hover {
+            background: #fef3f3;
+        }
+
+        .cell.selected {
+            background: #ffeb3b;
+            border-color: #f57c00;
+        }
+
+        .cell.found {
+            background: #c41e3a;
+            color: white;
+            border-color: #8b1426;
+        }
+
+        .words-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .word-item {
+            padding: 8px 16px;
+            background: #165b33;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .word-item:hover:not(.found) {
+            background: #1a7a3f;
+            transform: scale(1.05);
+        }
+
+        .word-item.found {
+            background: #c41e3a;
+            text-decoration: line-through;
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            color: #165b33;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .success-message {
+            text-align: center;
+            font-size: 1.8em;
+            color: #c41e3a;
+            margin-top: 20px;
+            display: none;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background: #165b33;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #1a7a3f;
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        }
+
+        .close {
+            color: #c41e3a;
+            float: right;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover {
+            color: #8b1426;
+        }
+
+        .pdf-content {
+            margin-top: 20px;
+        }
+
+        .pdf-content h2 {
+            color: #c41e3a;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #165b33;
+            padding-bottom: 5px;
+        }
+
+        .pdf-content h3 {
+            color: #165b33;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .pdf-content ul {
+            list-style-position: inside;
+            line-height: 1.8;
+            margin-left: 20px;
+        }
+
+        .pdf-content li {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .cell {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+                margin-top: 20px;
+            }
+            
+            .category-btn {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+
+            .tree {
+                font-size: 65px;
+            }
+
+            .tree-row {
+                gap: 20px;
+            }
+
+            .tree-label {
+                font-size: 0.85em;
+            }
+
+            .tree-container {
+                padding: 20px 10px;
+            }
+
+            .refresh-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+                top: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="refresh-btn" onclick="resetAllGames()" title="Byrja leikinn aftur">↻</button>
+        
+        <h1>🎄 Jólaorðaleit 🎄</h1>
+        <p class="subtitle">Finndu öll orðin í pökkunarlistanum!</p>
+        
+        <div class="category-select">
+            <button class="category-btn" onclick="selectCategory('fot', this)">Föt</button>
+            <button class="category-btn" onclick="selectCategory('yfirhafnir', this)">Yfirhafnir</button>
+            <button class="category-btn" onclick="selectCategory('naudsynjar', this)">Nauðsynjar</button>
+        </div>
+
+        <div class="tree-container">
+            <div class="tree-row">
+                <div class="tree-item">
+                    <div class="tree" id="tree-fot" onclick="openPDF()">🎄</div>
+                    <div class="tree-label">Föt</div>
+                </div>
+                <div class="tree-item">
+                    <div class="tree" id="tree-yfirhafnir" onclick="openPDF()">🎄</div>
+                    <div class="tree-label">Yfirhafnir</div>
+                </div>
+                <div class="tree-item">
+                    <div class="tree" id="tree-naudsynjar" onclick="openPDF()">🎄</div>
+                    <div class="tree-label">Nauðsynjar</div>
+                </div>
+            </div>
+            <div class="tree-progress" id="treeProgress">Leystir flokkar: 0/3</div>
+            <div class="tree-hint" id="treeHint">💡 Ljúktu við öll orðarugl til að opna glaðninginn!</div>
+        </div>
+
+        <div id="game-fot" class="game-area">
+            <div style="text-align: center;">
+                <div class="grid-container">
+                    <div id="grid-fot" class="grid"></div>
+                </div>
+            </div>
+            <div id="words-fot" class="words-list"></div>
+            <div id="score-fot" class="score"></div>
+            <div id="success-fot" class="success-message">🎉 Til hamingju! Þú fannt öll orðin! 🎉</div>
+            <button class="reset-btn" id="btn-fot" onclick="nextCategory('fot')">Næsta</button>
+        </div>
+
+        <div id="game-yfirhafnir" class="game-area">
+            <div style="text-align: center;">
+                <div class="grid-container">
+                    <div id="grid-yfirhafnir" class="grid"></div>
+                </div>
+            </div>
+            <div id="words-yfirhafnir" class="words-list"></div>
+            <div id="score-yfirhafnir" class="score"></div>
+            <div id="success-yfirhafnir" class="success-message">🎉 Til hamingju! Þú fannt öll orðin! 🎉</div>
+            <button class="reset-btn" id="btn-yfirhafnir" onclick="nextCategory('yfirhafnir')">Næsta</button>
+        </div>
+
+        <div id="game-naudsynjar" class="game-area">
+            <div style="text-align: center;">
+                <div class="grid-container">
+                    <div id="grid-naudsynjar" class="grid"></div>
+                </div>
+            </div>
+            <div id="words-naudsynjar" class="words-list"></div>
+            <div id="score-naudsynjar" class="score"></div>
+            <div id="success-naudsynjar" class="success-message">🎉 Til hamingju! Þú fannt öll orðin! 🎉</div>
+            <button class="reset-btn" id="btn-naudsynjar" onclick="nextCategory('naudsynjar')">Næsta</button>
+        </div>
+    </div>
+
+    <!-- PDF Modal -->
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePDF()">&times;</span>
+            <div class="pdf-content">
+                <h1 style="text-align: center; color: #c41e3a;">🎄 Pökkunarlisti 🎄</h1>
+                <p style="text-align: center; font-size: 1.2em; color: #165b33; margin-bottom: 30px;">4 daga ferðalag</p>
+                
+                <h2>👗 Föt</h2>
+                <ul>
+                    <li>1 gallabuxur eða þægilegar buxur</li>
+                    <li>1 aukapari af buxum (t.d. leggings eða þunnar buxur)</li>
+                    <li>1 kjóll eða sett fyrir kvöldið (valkvætt)</li>
+                    <li>2 stuttermabolir</li>
+                    <li>1–2 langermabolir eða grunnlög</li>
+                    <li>1 peysa eða kardigan</li>
+                    <li>1 þykk peysa eða hettupeysa</li>
+                    <li>Náttföt</li>
+                </ul>
+
+                <h2>🧦 Sokkar & undirföt</h2>
+                <ul>
+                    <li>4–6 pör af sokkum</li>
+                    <li>4–6 nærföt</li>
+                    <li>1–2 brjóstahaldarar</li>
+                </ul>
+
+                <h2>👢 Skór & fylgihlutir</h2>
+                <ul>
+                    <li>Þægilegir gönguskór</li>
+                    <li>Húfa, vettlingar og trefill (ef þarf)</li>
+                </ul>
+
+                <h2>💄 Snyrtivörur</h2>
+                <ul>
+                    <li>Tannbursti og tannkrem</li>
+                    <li>Hárbursti</li>
+                    <li>Snyrtitaska</li>
+                </ul>
+
+                <h2>📱 Tæki & hleðslur</h2>
+                <ul>
+                    <li>Sími og hleðslutæki</li>
+                    <li>Heyrnartól</li>
+                </ul>
+
+                <h2>🎒 Annað</h2>
+                <ul>
+                    <li>Lesefni eða spil</li>
+                    <li>Lítil dagstaska eða bakpoki</li>
+                    <li>Vantsbrúsa</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categories = {
+            fot: ['BOLIR', 'BUXUR', 'NÆRFÖT', 'SOKKAR', 'NÁTTFÖT', 'ULLARNÆRFÖT', 'FÍNFÖT'],
+            yfirhafnir: ['VETRARÚLPA', 'PEYSA', 'KULDASKÓR', 'HÚFA', 'VETTLINGAR', 'TREFILL'],
+            naudsynjar: ['TANNBURSTI', 'HÁRBURSTI', 'SNYRTITASKA', 'HLEÐSLUTÆKI', 'HEYRNATÓL']
+        };
+
+        let currentCategory = null;
+        let grids = {};
+        let selectedCells = {};
+        let foundWords = {};
+        let completedCategories = new Set();
+        let placedWords = {};
+
+        const directions = [
+            [0, 1],   // lárétt hægri
+            [1, 0],   // lóðrétt niður
+            [1, 1]    // ská niður-hægri
+        ];
+
+        function createGrid(category) {
+            const size = 12;
+            const grid = Array(size).fill().map(() => Array(size).fill(''));
+            const words = categories[category];
+            const placed = [];
+
+            // Raða orðum eftir lengd (lengstu fyrst)
+            const sortedWords = [...words].sort((a, b) => b.length - a.length);
+
+            sortedWords.forEach(word => {
+                let placed_successfully = false;
+                let attempts = 0;
+                
+                while (!placed_successfully && attempts < 200) {
+                    const dir = directions[Math.floor(Math.random() * directions.length)];
+                    const row = Math.floor(Math.random() * size);
+                    const col = Math.floor(Math.random() * size);
+                    
+                    if (canPlaceWord(grid, word, row, col, dir, size) && hasGoodSpacing(placed, row, col, word.length)) {
+                        placeWord(grid, word, row, col, dir);
+                        placed.push({word, row, col, dir});
+                        placed_successfully = true;
+                    }
+                    attempts++;
+                }
+            });
+
+            const icelandicLetters = 'AÁBCDÐEÉFGHIÍJKLMNOÓPRSTUÚVXYÝÞÆÖ';
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (grid[i][j] === '') {
+                        grid[i][j] = icelandicLetters[Math.floor(Math.random() * icelandicLetters.length)];
+                    }
+                }
+            }
+
+            return { grid, placed };
+        }
+
+        function hasGoodSpacing(placed, row, col, wordLength) {
+            // Ef þetta er fyrsta orðið, þá er allt í lagi
+            if (placed.length === 0) return true;
+            
+            // Athuga hvort fyrsti stafur sé of nálægt öðrum orðum
+            for (let p of placed) {
+                const distance = Math.sqrt(Math.pow(row - p.row, 2) + Math.pow(col - p.col, 2));
+                // Krefja að orð séu í að minnsta kosti 3 reita fjarlægð frá hvort öðru
+                if (distance < 3) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function canPlaceWord(grid, word, row, col, dir, size) {
+            for (let i = 0; i < word.length; i++) {
+                const newRow = row + dir[0] * i;
+                const newCol = col + dir[1] * i;
+                
+                if (newRow < 0 || newRow >= size || newCol < 0 || newCol >= size) {
+                    return false;
+                }
+                
+                if (grid[newRow][newCol] !== '' && grid[newRow][newCol] !== word[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function placeWord(grid, word, row, col, dir) {
+            for (let i = 0; i < word.length; i++) {
+                grid[row + dir[0] * i][col + dir[1] * i] = word[i];
+            }
+        }
+
+        function renderGrid(category) {
+            const gridElement = document.getElementById(`grid-${category}`);
+            const grid = grids[category];
+            const size = 12;
+            
+            gridElement.innerHTML = '';
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = grid[i][j];
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    // Mouse events
+                    cell.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        startSelection(category, i, j);
+                    });
+                    cell.addEventListener('mouseenter', () => continueSelection(category, i, j));
+                    cell.addEventListener('mouseup', () => endSelection(category));
+                    
+                    // Touch events fyrir síma
+                    cell.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        startSelection(category, i, j);
+                    });
+                    cell.addEventListener('touchmove', (e) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                        if (element && element.classList.contains('cell')) {
+                            const row = parseInt(element.dataset.row);
+                            const col = parseInt(element.dataset.col);
+                            continueSelection(category, row, col);
+                        }
+                    });
+                    cell.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        endSelection(category);
+                    });
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        function renderWordsList(category) {
+            const wordsElement = document.getElementById(`words-${category}`);
+            wordsElement.innerHTML = '';
+            
+            categories[category].forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.textContent = word;
+                wordItem.dataset.word = word;
+                wordItem.addEventListener('click', () => showHint(category, word));
+                wordsElement.appendChild(wordItem);
+            });
+        }
+
+        function showHint(category, word) {
+            console.log('Vísbending beðin fyrir:', word, 'í flokki:', category);
+            
+            // Athuga hvort orðið hefur þegar verið fundið
+            if (foundWords[category] && foundWords[category].has(word)) {
+                console.log('Orð hefur þegar verið fundið');
+                return;
+            }
+            
+            // Finna upplýsingar um hvar orðið er
+            if (!placedWords[category]) {
+                console.log('Engar upplýsingar um staðsetningu orða fyrir flokkinn:', category);
+                return;
+            }
+            
+            console.log('Öll orð í flokki:', placedWords[category].map(p => p.word));
+            
+            const wordInfo = placedWords[category].find(p => p.word === word);
+            
+            if (!wordInfo) {
+                console.log('Fann ekki orðið í placedWords:', word);
+                console.log('Tiltæk orð:', placedWords[category].map(p => p.word).join(', '));
+                return;
+            }
+            
+            console.log('Fann orð á:', wordInfo.row, wordInfo.col);
+            
+            // Finna rétta reitinn
+            const gridElement = document.getElementById(`grid-${category}`);
+            if (!gridElement) {
+                console.log('Fann ekki ruglið fyrir:', category);
+                return;
+            }
+            
+            const cell = gridElement.querySelector(`[data-row="${wordInfo.row}"][data-col="${wordInfo.col}"]`);
+            
+            if (!cell) {
+                console.log('Fann ekki reitinn á:', wordInfo.row, wordInfo.col);
+                console.log('Reyndi að finna með selector:', `[data-row="${wordInfo.row}"][data-col="${wordInfo.col}"]`);
+                return;
+            }
+            
+            console.log('Fann reitinn! Bæti við hint class');
+            
+            if (!cell.classList.contains('found')) {
+                cell.classList.add('hint');
+                setTimeout(() => {
+                    if (cell && cell.classList) {
+                        cell.classList.remove('hint');
+                    }
+                }, 3000);
+            } else {
+                console.log('Reiturinn er þegar fundinn');
+            }
+        }
+
+        function updateScore(category) {
+            const scoreElement = document.getElementById(`score-${category}`);
+            scoreElement.textContent = `Fundið: ${foundWords[category].size} / ${categories[category].length}`;
+        }
+
+        let isSelecting = false;
+        let selectionStart = null;
+        let currentSelection = [];
+
+        function startSelection(category, row, col) {
+            isSelecting = true;
+            selectionStart = { row, col };
+            currentSelection = [{ row, col }];
+            updateSelectionDisplay(category);
+        }
+
+        function continueSelection(category, row, col) {
+            if (!isSelecting || !selectionStart) return;
+            
+            const rowDiff = row - selectionStart.row;
+            const colDiff = col - selectionStart.col;
+            
+            if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
+                currentSelection = getLineCells(selectionStart.row, selectionStart.col, row, col);
+                updateSelectionDisplay(category);
+            }
+        }
+
+        function getLineCells(startRow, startCol, endRow, endCol) {
+            const cells = [];
+            const rowDiff = endRow - startRow;
+            const colDiff = endCol - startCol;
+            const steps = Math.max(Math.abs(rowDiff), Math.abs(colDiff));
+            
+            const rowStep = steps === 0 ? 0 : rowDiff / steps;
+            const colStep = steps === 0 ? 0 : colDiff / steps;
+            
+            for (let i = 0; i <= steps; i++) {
+                cells.push({
+                    row: startRow + Math.round(rowStep * i),
+                    col: startCol + Math.round(colStep * i)
+                });
+            }
+            
+            return cells;
+        }
+
+        function updateSelectionDisplay(category) {
+            const gridElement = document.getElementById(`grid-${category}`);
+            const cells = gridElement.querySelectorAll('.cell');
+            
+            cells.forEach(cell => {
+                if (!cell.classList.contains('found')) {
+                    cell.classList.remove('selected');
+                }
+            });
+            
+            currentSelection.forEach(({ row, col }) => {
+                const cell = gridElement.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cell && !cell.classList.contains('found')) {
+                    cell.classList.add('selected');
+                }
+            });
+        }
+
+        function endSelection(category) {
+            if (!isSelecting) return;
+            isSelecting = false;
+            
+            const word = currentSelection.map(({ row, col }) => {
+                return grids[category][row][col];
+            }).join('');
+            
+            if (categories[category].includes(word) && !foundWords[category].has(word)) {
+                markWordFound(category, word, currentSelection);
+            } else {
+                updateSelectionDisplay(category);
+                currentSelection = [];
+            }
+            
+            selectionStart = null;
+        }
+
+        function markWordFound(category, word, cells) {
+            foundWords[category].add(word);
+            
+            const gridElement = document.getElementById(`grid-${category}`);
+            cells.forEach(({ row, col }) => {
+                const cell = gridElement.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.classList.remove('selected');
+                    cell.classList.add('found');
+                }
+            });
+
+            const wordElement = document.querySelector(`#words-${category} [data-word="${word}"]`);
+            if (wordElement) {
+                wordElement.classList.add('found');
+            }
+            
+            currentSelection = [];
+            updateScore(category);
+            
+            if (foundWords[category].size === categories[category].length) {
+                document.getElementById(`success-${category}`).style.display = 'block';
+                completedCategories.add(category);
+                updateCategoryButton(category);
+                updateTree();
+                updateButtonText(category);
+            }
+        }
+
+        function updateButtonText(category) {
+            const button = document.getElementById(`btn-${category}`);
+            
+            // Ef öll 3 rugl eru leyst, sýna "Lokið"
+            if (completedCategories.size === 3) {
+                button.textContent = 'Lokið ✓';
+                button.style.background = '#c41e3a';
+            } else {
+                button.textContent = 'Næsta';
+            }
+        }
+
+        function nextCategory(current) {
+            // Ef öll rugl eru leyst, gera ekkert
+            if (completedCategories.size === 3) {
+                return;
+            }
+            
+            const order = ['fot', 'yfirhafnir', 'naudsynjar'];
+            
+            // Finna næsta óleyst flokk
+            for (let cat of order) {
+                if (!completedCategories.has(cat)) {
+                    selectCategory(cat);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+            }
+        }
+
+        function resetAllGames() {
+            if (confirm('Ertu viss um að þú viljir byrja leikinn aftur?')) {
+                // Hreinsa allt
+                completedCategories.clear();
+                grids = {};
+                foundWords = {};
+                placedWords = {};
+                selectedCells = {};
+                
+                // Endurstilla alla flokka
+                ['fot', 'yfirhafnir', 'naudsynjar'].forEach(cat => {
+                    document.getElementById(`success-${cat}`).style.display = 'none';
+                    const button = document.getElementById(`btn-${cat}`);
+                    button.textContent = 'Næsta';
+                    button.style.background = '#165b33';
+                });
+                
+                // Endurstilla flokkatakka
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('completed');
+                    btn.classList.remove('active');
+                });
+                
+                // Endurstilla tré
+                updateTree();
+                
+                // Fara í fyrsta flokkinn
+                selectCategory('fot');
+                
+                console.log('🔄 Leikur endurstilltur');
+            }
+        }
+
+        function updateCategoryButton(category) {
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.toLowerCase() === getCategoryName(category)) {
+                    btn.classList.add('completed');
+                }
+            });
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                'fot': 'föt',
+                'yfirhafnir': 'yfirhafnir',
+                'naudsynjar': 'nauðsynjar'
+            };
+            return names[category];
+        }
+
+        function updateTree() {
+            const progress = document.getElementById('treeProgress');
+            const hint = document.getElementById('treeHint');
+            const completed = completedCategories.size;
+            
+            progress.textContent = `Leystir flokkar: ${completed}/3`;
+            
+            // Uppfæra hvert tré fyrir sig
+            ['fot', 'yfirhafnir', 'naudsynjar'].forEach(cat => {
+                const tree = document.getElementById(`tree-${cat}`);
+                if (completedCategories.has(cat)) {
+                    tree.classList.add('completed');
+                } else {
+                    tree.classList.remove('completed');
+                }
+            });
+            
+            // Ef öll tré eru leyst, bæta við glow effect og fela vísbendingu
+            if (completed === 3) {
+                document.querySelectorAll('.tree').forEach(tree => {
+                    tree.classList.add('all-complete');
+                });
+                progress.textContent = '🎉 Smelltu á tré til að sjá glaðninginn! 🎉';
+                hint.classList.add('hidden');
+            } else {
+                document.querySelectorAll('.tree').forEach(tree => {
+                    tree.classList.remove('all-complete');
+                });
+                hint.classList.remove('hidden');
+            }
+        }
+
+        function selectCategory(category) {
+            currentCategory = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Finna rétta takkann og merkja hann active
+            const categoryNames = { 'fot': 'Föt', 'yfirhafnir': 'Yfirhafnir', 'naudsynjar': 'Nauðsynjar' };
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                if (btn.textContent === categoryNames[category]) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.game-area').forEach(area => area.classList.remove('active'));
+            document.getElementById(`game-${category}`).classList.add('active');
+            
+            if (!grids[category]) {
+                initGame(category);
+            }
+        }
+
+        function initGame(category) {
+            console.log(`🎮 Byrja að búa til ${category} rugl...`);
+            const result = createGrid(category);
+            grids[category] = result.grid;
+            placedWords[category] = result.placed;
+            foundWords[category] = new Set();
+            selectedCells[category] = new Set();
+            
+            console.log(`📋 Orð í ${category}:`, placedWords[category].map(p => p.word).join(', '));
+            
+            renderGrid(category);
+            renderWordsList(category);
+            updateScore(category);
+        }
+
+        function resetGame(category) {
+            completedCategories.delete(category);
+            initGame(category);
+            document.getElementById(`success-${category}`).style.display = 'none';
+            
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.toLowerCase() === getCategoryName(category)) {
+                    btn.classList.remove('completed');
+                }
+            });
+            
+            updateTree();
+        }
+
+        function openPDF() {
+            if (completedCategories.size === 3) {
+                document.getElementById('pdfModal').style.display = 'block';
+            }
+        }
+
+        function closePDF() {
+            document.getElementById('pdfModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('pdfModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('selectstart', (e) => {
+            if (e.target.classList.contains('cell')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
