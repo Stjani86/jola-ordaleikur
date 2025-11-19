@@ -206,7 +206,16 @@
         }
 
         .game-area.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .game-area > div:first-child {
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
         .grid-container {
@@ -1014,18 +1023,22 @@
             }
         }
 
-        function selectCategory(category) {
+        function selectCategory(category, buttonElement) {
             currentCategory = category;
             
             document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
             
-            // Finna rétta takkann og merkja hann active
-            const categoryNames = { 'fot': 'Föt', 'yfirhafnir': 'Yfirhafnir', 'naudsynjar': 'Nauðsynjar' };
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                if (btn.textContent === categoryNames[category]) {
-                    btn.classList.add('active');
-                }
-            });
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            } else {
+                // Fallback ef buttonElement er ekki til
+                const categoryNames = { 'fot': 'Föt', 'yfirhafnir': 'Yfirhafnir', 'naudsynjar': 'Nauðsynjar' };
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    if (btn.textContent === categoryNames[category]) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
             
             document.querySelectorAll('.game-area').forEach(area => area.classList.remove('active'));
             document.getElementById(`game-${category}`).classList.add('active');
